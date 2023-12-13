@@ -1,10 +1,14 @@
 package com.davidsonsw;
 
+import com.davidsonsw.matrix.MatrixTransform;
+import com.davidsonsw.neuralnet.MatrixFacade;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import org.ejml.data.DMatrixRMaj;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Builder
@@ -16,8 +20,9 @@ public class NeuronLayer {
     private final int numberOfNeurons;
     private final DMatrixRMaj weights;
     private final DMatrixRMaj biases;
+    private final List<Transform> transforms = new ArrayList<>();
 
-    public static NeuronLayer randomNeuronLayer(int numberOfInputs, int numberOfNeurons) {
+    public static NeuronLayer randomDenseNeuronLayer(int numberOfInputs, int numberOfNeurons) {
         Random random = new Random();
 
         double[][] weights = new double[numberOfInputs][numberOfNeurons];
@@ -36,11 +41,42 @@ public class NeuronLayer {
         }
 
 
-        NeuronLayer nl = NeuronLayer.builder()
+        NeuronLayer neuronLayer = NeuronLayer.builder()
                 .numberOfNeurons(4)
                 .weights(new DMatrixRMaj(weights))
                 .biases(new DMatrixRMaj(biases))
                 .build();
-        return nl;
+        neuronLayer.getTransforms().add(Transform.DENSE);
+        return neuronLayer;
+    }
+
+    public DMatrixRMaj applyTransforms(DMatrixRMaj inputs){
+
+        MatrixFacade.InputsFacade inputsFacade = MatrixFacade.InputsFacade.newInputsFacade(inputs);
+
+        if (inputsFacade.numberOfInputs() != this.numberOfInputs){
+            String message = "Input dimension mismatch: inputs is of dimension (" +
+                    inputs.getNumRows() + "," + inputs.getNumCols() + ") but was expected to be (" +
+                    this.numberOfInputs + ", <num datasets>)";
+            throw new IllegalArgumentException(message);
+        }
+
+        DMatrixRMaj result;
+        for (Transform transform: this.transforms){
+            if (Transform.DENSE == transform){
+                result = MatrixTransform.applyDensityTransform(inputs, this.weights, this.biases);
+            }
+            else if(Transform.RELU == transform){
+                result = MatrixTransform.applyReLUTransform(result);
+            }
+            else if(Transform.SOFTMAX == transform){
+                result = MatrixTransform.applySoftMaxTransform(result);
+            }
+            else {
+                throw new IllegalStateException("Unrecognized transform: <" + transform + ">");
+            }
+        }
+
+        return result;
     }
 }
