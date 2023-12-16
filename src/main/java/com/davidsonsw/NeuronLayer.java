@@ -61,7 +61,7 @@ public class NeuronLayer {
             throw new IllegalArgumentException(message);
         }
 
-        DMatrixRMaj result;
+        DMatrixRMaj result = inputs;
         for (Transform transform: this.transforms){
             if (Transform.DENSE == transform){
                 result = MatrixTransform.applyDensityTransform(inputs, this.weights, this.biases);
