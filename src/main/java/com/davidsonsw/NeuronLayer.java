@@ -22,36 +22,13 @@ public class NeuronLayer {
     private final DMatrixRMaj biases;
     private final List<Transform> transforms = new ArrayList<>();
 
-    public static NeuronLayer randomDenseNeuronLayer(int numberOfInputs, int numberOfNeurons) {
-        Random random = new Random();
-
-        double[][] weights = new double[numberOfInputs][numberOfNeurons];
-        for (int input = 0; input < numberOfInputs; input++) {
-            for (int neuron = 0; neuron < numberOfNeurons; neuron++) {
-                weights[input][neuron] = random.nextGaussian();
-            }
-        }
-
-        double[][] biases = new double[numberOfInputs][numberOfNeurons];
-        for (int neuron = 0; neuron < numberOfNeurons; neuron++) {
-            double nextGaussian = random.nextGaussian();
-            for (int input = 0; input < numberOfInputs; input++) {
-                biases[input][neuron] = nextGaussian;
-            }
-        }
-
-
-        NeuronLayer neuronLayer = NeuronLayer.builder()
-                .numberOfNeurons(4)
-                .weights(new DMatrixRMaj(weights))
-                .biases(new DMatrixRMaj(biases))
-                .build();
-        neuronLayer.getTransforms().add(Transform.DENSE);
-        return neuronLayer;
-    }
-
     public DMatrixRMaj applyTransforms(DMatrixRMaj inputs){
 
+        // 1st must be DENSE
+        if ( transforms.get(0).compareTo(Transform.DENSE) != 0 ){
+            throw new IllegalStateException("1st transform must be DENSE otherwise there's nothing to work on ... ");
+        }
+        
         MatrixFacade.InputsFacade inputsFacade = MatrixFacade.InputsFacade.newInputsFacade(inputs);
 
         if (inputsFacade.numberOfInputs() != this.numberOfInputs){
@@ -78,5 +55,33 @@ public class NeuronLayer {
         }
 
         return result;
+    }
+
+    public static NeuronLayer randomDenseNeuronLayer(int numberOfInputs, int numberOfNeurons) {
+        Random random = new Random();
+
+        double[][] weights = new double[numberOfInputs][numberOfNeurons];
+        for (int input = 0; input < numberOfInputs; input++) {
+            for (int neuron = 0; neuron < numberOfNeurons; neuron++) {
+                weights[input][neuron] = random.nextGaussian();
+            }
+        }
+
+        double[][] biases = new double[numberOfInputs][numberOfNeurons];
+        for (int neuron = 0; neuron < numberOfNeurons; neuron++) {
+            double nextGaussian = random.nextGaussian();
+            for (int input = 0; input < numberOfInputs; input++) {
+                biases[input][neuron] = nextGaussian;
+            }
+        }
+
+
+        NeuronLayer neuronLayer = NeuronLayer.builder()
+                .numberOfNeurons(4)
+                .weights(new DMatrixRMaj(weights))
+                .biases(new DMatrixRMaj(biases))
+                .build();
+        neuronLayer.getTransforms().add(Transform.DENSE);
+        return neuronLayer;
     }
 }
