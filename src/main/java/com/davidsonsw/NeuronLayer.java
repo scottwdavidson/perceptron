@@ -28,7 +28,7 @@ public class NeuronLayer {
         if ( transforms.get(0).compareTo(Transform.DENSE) != 0 ){
             throw new IllegalStateException("1st transform must be DENSE otherwise there's nothing to work on ... ");
         }
-        
+
         MatrixFacade.InputsFacade inputsFacade = MatrixFacade.InputsFacade.newInputsFacade(inputs);
 
         if (inputsFacade.numberOfInputs() != this.numberOfInputs){
